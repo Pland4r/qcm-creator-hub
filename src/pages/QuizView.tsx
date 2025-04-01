@@ -1,43 +1,25 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchQuizById } from '@/services/quizService';
+import { quizService } from '@/services/apiService';
 import Navbar from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/lib/supabase';
 
 const QuizView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Log the Supabase connection info to verify it's working
+  // Log the backend connection info
   React.useEffect(() => {
-    console.log("Supabase client initialized:", !!supabase);
-    
-    // Test if we can connect to Supabase
-    const testConnection = async () => {
-      try {
-        const { data, error } = await supabase.from('quizzes').select('count').limit(1);
-        if (error) {
-          console.error("Supabase connection test failed:", error);
-        } else {
-          console.log("Supabase connection successful:", data);
-        }
-      } catch (err) {
-        console.error("Error testing Supabase connection:", err);
-      }
-    };
-    
-    testConnection();
+    console.log("Connecting to Spring Boot backend...");
   }, []);
 
   const { data: quiz, isLoading, error } = useQuery({
     queryKey: ['quiz', id],
-    queryFn: () => id ? fetchQuizById(id) : null,
+    queryFn: () => id ? quizService.fetchQuizById(id) : null,
     enabled: !!id,
   });
 

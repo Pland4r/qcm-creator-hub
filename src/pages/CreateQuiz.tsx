@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,7 @@ import { Plus, Trash, Save, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
-import { createQuiz } from '@/services/quizService';
+import { quizService } from '@/services/apiService';
 import { Quiz } from '@/lib/supabase';
 
 interface Question {
@@ -109,7 +110,7 @@ const CreateQuiz = () => {
   };
 
   const createQuizMutation = useMutation({
-    mutationFn: createQuiz,
+    mutationFn: quizService.createQuiz,
     onSuccess: (quizId) => {
       toast({
         title: "Quiz created!",

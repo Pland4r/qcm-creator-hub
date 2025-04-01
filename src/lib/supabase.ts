@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Default values for development - replace these with your actual Supabase project values
@@ -11,6 +10,10 @@ if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KE
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+// Types for the quiz app
+// Note: This file used to set up Supabase, but we're now using Spring Boot as backend
+// Keeping the type definitions for frontend use
 
 // Quiz types
 export type QuizOption = {

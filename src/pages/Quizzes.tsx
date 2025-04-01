@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Book, Edit, Search, Trash, Plus, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fetchQuizzes, deleteQuiz } from '@/services/quizService';
+import { quizService } from '@/services/apiService';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
@@ -18,12 +18,12 @@ const Quizzes = () => {
   // Fetch quizzes
   const { data: quizzes, isLoading, error } = useQuery({
     queryKey: ['quizzes'],
-    queryFn: fetchQuizzes,
+    queryFn: quizService.fetchQuizzes,
   });
 
   // Delete quiz mutation
   const deleteMutation = useMutation({
-    mutationFn: deleteQuiz,
+    mutationFn: quizService.deleteQuiz,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['quizzes'] });
       toast({
@@ -47,11 +47,6 @@ const Quizzes = () => {
       console.error("Error deleting quiz:", error);
     }
   };
-
-  // Test Supabase connection on component mount
-  React.useEffect(() => {
-    console.log("Quizzes page loaded - Supabase should be initialized");
-  }, []);
 
   // Filter quizzes based on search term
   const filteredQuizzes = quizzes?.filter(quiz => 
