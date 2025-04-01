@@ -12,6 +12,7 @@ import { Book, Loader2 } from 'lucide-react';
 const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const { signIn, signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -29,7 +30,7 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp(email, password);
+    await signUp(username, email, password);
   };
 
   if (isLoading) {
@@ -108,6 +109,17 @@ const Auth = () => {
             </CardHeader>
             <form onSubmit={handleSignUp}>
               <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-username">Username</Label>
+                  <Input 
+                    id="signup-username" 
+                    type="text" 
+                    placeholder="Enter your username"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input 
