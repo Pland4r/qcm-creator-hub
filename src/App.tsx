@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Quizzes from "./pages/Quizzes";
 import CreateQuiz from "./pages/CreateQuiz";
+import QuizView from "./pages/QuizView";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import Auth from "./pages/Auth";
@@ -32,6 +33,11 @@ const App = () => (
             <Route path="/create" element={
               <ProtectedRoute>
                 <CreateQuiz />
+              </ProtectedRoute>
+            } />
+            <Route path="/quiz/:id" element={
+              <ProtectedRoute>
+                <QuizView />
               </ProtectedRoute>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

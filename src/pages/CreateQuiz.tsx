@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,9 +6,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash, Save } from 'lucide-react';
+import { Plus, Trash, Save, Loader2 } from 'lucide-react';
 import Navbar from '@/components/Navbar';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@tanstack/react-query';
+import { createQuiz } from '@/services/quizService';
+import { Quiz } from '@/lib/supabase';
 
 interface Question {
   id: string;
@@ -105,8 +107,25 @@ const CreateQuiz = () => {
     );
   };
 
-  const handleSave = () => {
-    // Validation
+  const createQuizMutation = useMutation({
+    mutationFn: createQuiz,
+    onSuccess: (quizId) => {
+      toast({
+        title: "Quiz created!",
+        description: "Your quiz has been successfully created.",
+      });
+      navigate(`/quiz/${quizId}`);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error creating quiz",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleSave = async () => {
     if (!title.trim()) {
       toast({
         title: "Missing title",
@@ -150,17 +169,31 @@ const CreateQuiz = () => {
       return;
     }
 
-    // In a real app, we would save to a database here
-    // For now, we'll just show a success message
-    toast({
-      title: "Quiz created!",
-      description: "Your quiz has been successfully created.",
-    });
-    
-    console.log("Saved quiz:", { title, description, technology, questions });
-    
-    // Navigate to the quizzes page
-    navigate('/quizzes');
+    try {
+      const quizData: Omit<Quiz, 'id' | 'createdAt'> = {
+        title,
+        description,
+        technology: technology as 'spring' | 'angular' | 'both',
+        questions: questions.map(q => ({
+          id: q.id,
+          text: q.text,
+          options: q.options.map(o => ({
+            id: o.id,
+            text: o.text,
+            isCorrect: o.isCorrect,
+          }))
+        }))
+      };
+      
+      createQuizMutation.mutate(quizData);
+    } catch (error) {
+      console.error("Error creating quiz:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create quiz. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -295,9 +328,18 @@ const CreateQuiz = () => {
               <Button variant="outline" onClick={() => navigate('/')}>
                 Cancel
               </Button>
-              <Button onClick={handleSave}>
-                <Save className="h-4 w-4 mr-2" />
-                Save Quiz
+              <Button onClick={handleSave} disabled={createQuizMutation.isPending}>
+                {createQuizMutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Quiz
+                  </>
+                )}
               </Button>
             </div>
           </div>

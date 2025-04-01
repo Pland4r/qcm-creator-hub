@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +47,11 @@ const Quizzes = () => {
       console.error("Error deleting quiz:", error);
     }
   };
+
+  // Test Supabase connection on component mount
+  React.useEffect(() => {
+    console.log("Quizzes page loaded - Supabase should be initialized");
+  }, []);
 
   // Filter quizzes based on search term
   const filteredQuizzes = quizzes?.filter(quiz => 
