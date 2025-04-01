@@ -40,6 +40,7 @@ const CreateQuiz = () => {
       ],
     },
   ]);
+  const { toast } = useToast();
 
   const addQuestion = () => {
     const newId = String(questions.length + 1);
