@@ -19,10 +19,7 @@ public class DbInitializer implements CommandLineRunner {
         // Initialize roles
         if (roleRepository.count() == 0) {
             Role userRole = new Role(ERole.USER);
-            Role adminRole = new Role(ERole.ADMIN);
-            
             roleRepository.save(userRole);
-            roleRepository.save(adminRole);
         }
     }
 }
