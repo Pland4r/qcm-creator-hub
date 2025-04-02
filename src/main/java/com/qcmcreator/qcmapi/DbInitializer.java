@@ -15,11 +15,14 @@ public class DbInitializer implements CommandLineRunner {
     private RoleRepository roleRepository;
 
     @Override
-    public void run(String... args) {
+    public void run(String... args) throws Exception {
         // Initialize roles
         if (roleRepository.count() == 0) {
-            roleRepository.save(new Role(ERole.ROLE_USER));
-            roleRepository.save(new Role(ERole.ROLE_ADMIN));
+            Role userRole = new Role(ERole.USER);
+            Role adminRole = new Role(ERole.ADMIN);
+            
+            roleRepository.save(userRole);
+            roleRepository.save(adminRole);
         }
     }
 }

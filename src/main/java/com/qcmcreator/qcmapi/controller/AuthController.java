@@ -11,17 +11,12 @@ import com.qcmcreator.qcmapi.model.Role;
 import com.qcmcreator.qcmapi.model.User;
 import com.qcmcreator.qcmapi.repository.RoleRepository;
 import com.qcmcreator.qcmapi.repository.UserRepository;
-import com.qcmcreator.qcmapi.security.jwt.JwtUtils;
-import com.qcmcreator.qcmapi.security.services.UserDetailsImpl;
+import com.qcmcreator.qcmapi.security.TokenUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashSet;
@@ -33,39 +28,38 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+    
     @Autowired
-    AuthenticationManager authenticationManager;
+    private UserRepository userRepository;
 
     @Autowired
-    UserRepository userRepository;
-
+    private RoleRepository roleRepository;
+    
     @Autowired
-    RoleRepository roleRepository;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
+    private TokenUtils tokenUtils;
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElse(null);
         
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
+        if (user == null || !loginRequest.getPassword().equals(user.getPassword())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Error: Invalid username or password!"));
+        }
+
+        String token = tokenUtils.generateToken(user.getUsername(), user.getId());
+        
+        List<String> roles = user.getRoles().stream()
+                .map(role -> role.getName().name())
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(new JwtResponse(
-                jwt,
-                userDetails.getId(),
-                userDetails.getUsername(),
-                userDetails.getEmail(),
+                token,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
                 roles));
     }
 
@@ -87,10 +81,10 @@ public class AuthController {
         User user = new User();
         user.setUsername(signUpRequest.getUsername());
         user.setEmail(signUpRequest.getEmail());
-        user.setPassword(encoder.encode(signUpRequest.getPassword()));
+        user.setPassword(signUpRequest.getPassword());  // Note: In a real app, you should hash this password
 
         Set<Role> roles = new HashSet<>();
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+        Role userRole = roleRepository.findByName(ERole.USER)
                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
         roles.add(userRole);
         user.setRoles(roles);
@@ -101,16 +95,28 @@ public class AuthController {
     }
     
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()) {
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            return ResponseEntity.ok(new UserResponse(
-                    userDetails.getId(), 
-                    userDetails.getUsername(), 
-                    userDetails.getEmail()
-            ));
-        } else {
-            return ResponseEntity.status(401).body(new MessageResponse("Not authenticated"));
+    public ResponseEntity<?> getCurrentUser(HttpServletRequest request) {
+        String headerAuth = request.getHeader("Authorization");
+        
+        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
+            String token = headerAuth.substring(7);
+            
+            if (tokenUtils.validateToken(token)) {
+                String username = tokenUtils.getUsernameFromToken(token);
+                Long userId = tokenUtils.getUserIdFromToken(token);
+                
+                User user = userRepository.findByUsername(username).orElse(null);
+                
+                if (user != null) {
+                    return ResponseEntity.ok(new UserResponse(
+                            user.getId(), 
+                            user.getUsername(), 
+                            user.getEmail()
+                    ));
+                }
+            }
         }
+        
+        return ResponseEntity.status(401).body(new MessageResponse("Not authenticated"));
     }
 }

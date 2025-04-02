@@ -30,7 +30,7 @@ public class User {
     private String email;
 
     @Column(nullable = false)
-    private String password;
+    private String password;  // Note: In a real app, this should be hashed
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_roles", 
