@@ -22,6 +22,16 @@ public class Question {
     @Column(nullable = false, length = 500)
     private String text;
     
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(name = "question_type", nullable = false)
+    private QuestionType questionType = QuestionType.MULTIPLE_CHOICE;
+    
+    @Column(name = "direct_answer", length = 500)
+    private String directAnswer;
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id")
     private Quiz quiz;

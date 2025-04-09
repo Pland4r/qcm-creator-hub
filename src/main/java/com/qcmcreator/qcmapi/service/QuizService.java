@@ -4,10 +4,7 @@ package com.qcmcreator.qcmapi.service;
 import com.qcmcreator.qcmapi.dto.OptionDto;
 import com.qcmcreator.qcmapi.dto.QuestionDto;
 import com.qcmcreator.qcmapi.dto.QuizDto;
-import com.qcmcreator.qcmapi.model.Option;
-import com.qcmcreator.qcmapi.model.Question;
-import com.qcmcreator.qcmapi.model.Quiz;
-import com.qcmcreator.qcmapi.model.User;
+import com.qcmcreator.qcmapi.model.*;
 import com.qcmcreator.qcmapi.repository.OptionRepository;
 import com.qcmcreator.qcmapi.repository.QuestionRepository;
 import com.qcmcreator.qcmapi.repository.QuizRepository;
@@ -62,11 +59,15 @@ public class QuizService {
             for (QuestionDto questionDto : quizDto.getQuestions()) {
                 Question question = new Question();
                 question.setText(questionDto.getText());
+                question.setImageUrl(questionDto.getImageUrl());
+                question.setQuestionType(questionDto.getQuestionType());
+                question.setDirectAnswer(questionDto.getDirectAnswer());
                 question.setQuiz(savedQuiz);
                 
                 Question savedQuestion = questionRepository.save(question);
                 
-                if (questionDto.getOptions() != null) {
+                // Only process options for multiple choice questions
+                if (questionDto.getQuestionType() == QuestionType.MULTIPLE_CHOICE && questionDto.getOptions() != null) {
                     for (OptionDto optionDto : questionDto.getOptions()) {
                         Option option = new Option();
                         option.setText(optionDto.getText());
@@ -106,11 +107,15 @@ public class QuizService {
                 for (QuestionDto questionDto : quizDto.getQuestions()) {
                     Question question = new Question();
                     question.setText(questionDto.getText());
+                    question.setImageUrl(questionDto.getImageUrl());
+                    question.setQuestionType(questionDto.getQuestionType());
+                    question.setDirectAnswer(questionDto.getDirectAnswer());
                     question.setQuiz(quiz);
                     
                     Question savedQuestion = questionRepository.save(question);
                     
-                    if (questionDto.getOptions() != null) {
+                    // Only process options for multiple choice questions
+                    if (questionDto.getQuestionType() == QuestionType.MULTIPLE_CHOICE && questionDto.getOptions() != null) {
                         for (OptionDto optionDto : questionDto.getOptions()) {
                             Option option = new Option();
                             option.setText(optionDto.getText());
@@ -160,17 +165,24 @@ public class QuizService {
             QuestionDto questionDto = new QuestionDto();
             questionDto.setId(question.getId());
             questionDto.setText(question.getText());
+            questionDto.setImageUrl(question.getImageUrl());
+            questionDto.setQuestionType(question.getQuestionType());
+            questionDto.setDirectAnswer(question.getDirectAnswer());
             
-            List<Option> options = optionRepository.findByQuestion(question);
             List<OptionDto> optionDtos = new ArrayList<>();
             
-            for (Option option : options) {
-                OptionDto optionDto = new OptionDto();
-                optionDto.setId(option.getId());
-                optionDto.setText(option.getText());
-                optionDto.setCorrect(option.isCorrect());
+            // Only fetch options for multiple choice questions
+            if (question.getQuestionType() == QuestionType.MULTIPLE_CHOICE) {
+                List<Option> options = optionRepository.findByQuestion(question);
                 
-                optionDtos.add(optionDto);
+                for (Option option : options) {
+                    OptionDto optionDto = new OptionDto();
+                    optionDto.setId(option.getId());
+                    optionDto.setText(option.getText());
+                    optionDto.setCorrect(option.isCorrect());
+                    
+                    optionDtos.add(optionDto);
+                }
             }
             
             questionDto.setOptions(optionDtos);

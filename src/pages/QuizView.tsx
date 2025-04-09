@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -89,30 +90,51 @@ const QuizView = () => {
                       {index + 1}. {question.text}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-2">
-                      {question.options.map((option) => (
-                        <div
-                          key={option.id}
-                          className={`p-3 rounded-md ${
-                            option.isCorrect 
-                              ? 'bg-green-100 border border-green-300 dark:bg-green-900/20 dark:border-green-800' 
-                              : 'bg-muted'
-                          }`}
-                        >
-                          <div className="flex items-center">
-                            <div className="flex-1">
-                              {option.text}
-                            </div>
-                            {option.isCorrect && (
-                              <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800">
-                                Correct Answer
-                              </Badge>
-                            )}
+                  <CardContent className="space-y-4">
+                    {question.imageUrl && (
+                      <div className="my-4">
+                        <img 
+                          src={question.imageUrl} 
+                          alt={`Question ${index + 1}`} 
+                          className="max-h-64 rounded-md mx-auto"
+                        />
+                      </div>
+                    )}
+
+                    {question.questionType === "DIRECT_ANSWER" ? (
+                      <div className="p-4 bg-green-100 border border-green-300 rounded-md dark:bg-green-900/20 dark:border-green-800">
+                        <div className="flex items-center">
+                          <div className="flex-1">
+                            <span className="font-medium">Correct Answer: </span>
+                            {question.directAnswer}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="grid gap-2">
+                        {question.options.map((option) => (
+                          <div
+                            key={option.id}
+                            className={`p-3 rounded-md ${
+                              option.isCorrect 
+                                ? 'bg-green-100 border border-green-300 dark:bg-green-900/20 dark:border-green-800' 
+                                : 'bg-muted'
+                            }`}
+                          >
+                            <div className="flex items-center">
+                              <div className="flex-1">
+                                {option.text}
+                              </div>
+                              {option.isCorrect && (
+                                <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800">
+                                  Correct Answer
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               ))}

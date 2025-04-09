@@ -7,16 +7,26 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash, Save, Loader2 } from 'lucide-react';
+import { Plus, Trash, Save, Loader2, Image, MessageSquare } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Navbar from '@/components/Navbar';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { quizService } from '@/services/apiService';
 import { Quiz } from '@/lib/supabase';
+import ImageUpload from '@/components/ImageUpload';
+
+enum QuestionType {
+  MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
+  DIRECT_ANSWER = "DIRECT_ANSWER"
+}
 
 interface Question {
   id: string;
   text: string;
+  imageUrl: string;
+  questionType: QuestionType;
+  directAnswer: string;
   options: Array<{
     id: string;
     text: string;
@@ -33,6 +43,9 @@ const CreateQuiz = () => {
     {
       id: '1',
       text: '',
+      imageUrl: '',
+      questionType: QuestionType.MULTIPLE_CHOICE,
+      directAnswer: '',
       options: [
         { id: '1-1', text: '', isCorrect: false },
         { id: '1-2', text: '', isCorrect: false },
@@ -50,6 +63,9 @@ const CreateQuiz = () => {
       {
         id: newId,
         text: '',
+        imageUrl: '',
+        questionType: QuestionType.MULTIPLE_CHOICE,
+        directAnswer: '',
         options: [
           { id: `${newId}-1`, text: '', isCorrect: false },
           { id: `${newId}-2`, text: '', isCorrect: false },
@@ -75,6 +91,24 @@ const CreateQuiz = () => {
   const updateQuestionText = (id: string, text: string) => {
     setQuestions(
       questions.map(q => (q.id === id ? { ...q, text } : q))
+    );
+  };
+
+  const updateQuestionImage = (id: string, imageUrl: string) => {
+    setQuestions(
+      questions.map(q => (q.id === id ? { ...q, imageUrl } : q))
+    );
+  };
+
+  const updateQuestionType = (id: string, questionType: QuestionType) => {
+    setQuestions(
+      questions.map(q => (q.id === id ? { ...q, questionType } : q))
+    );
+  };
+
+  const updateDirectAnswer = (id: string, directAnswer: string) => {
+    setQuestions(
+      questions.map(q => (q.id === id ? { ...q, directAnswer } : q))
     );
   };
 
@@ -147,25 +181,41 @@ const CreateQuiz = () => {
       return;
     }
 
-    const hasEmptyOptions = questions.some(q => 
-      q.options.some(o => !o.text.trim())
+    // Check for direct answer questions without answers
+    const hasEmptyDirectAnswers = questions.some(q => 
+      q.questionType === QuestionType.DIRECT_ANSWER && !q.directAnswer.trim()
     );
-    if (hasEmptyOptions) {
+    if (hasEmptyDirectAnswers) {
       toast({
-        title: "Empty options",
-        description: "Please fill in all option fields.",
+        title: "Missing direct answers",
+        description: "Please provide answers for all direct answer questions.",
         variant: "destructive"
       });
       return;
     }
 
-    const hasMissingCorrectAnswers = questions.some(q => 
+    // Check multiple choice questions
+    const multipleChoiceQuestions = questions.filter(q => q.questionType === QuestionType.MULTIPLE_CHOICE);
+    
+    const hasEmptyOptions = multipleChoiceQuestions.some(q => 
+      q.options.some(o => !o.text.trim())
+    );
+    if (hasEmptyOptions) {
+      toast({
+        title: "Empty options",
+        description: "Please fill in all option fields for multiple choice questions.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const hasMissingCorrectAnswers = multipleChoiceQuestions.some(q => 
       !q.options.some(o => o.isCorrect)
     );
     if (hasMissingCorrectAnswers) {
       toast({
         title: "Missing correct answers",
-        description: "Please select a correct answer for each question.",
+        description: "Please select a correct answer for each multiple choice question.",
         variant: "destructive"
       });
       return;
@@ -179,11 +229,14 @@ const CreateQuiz = () => {
         questions: questions.map(q => ({
           id: q.id,
           text: q.text,
-          options: q.options.map(o => ({
+          imageUrl: q.imageUrl,
+          questionType: q.questionType,
+          directAnswer: q.directAnswer,
+          options: q.questionType === QuestionType.MULTIPLE_CHOICE ? q.options.map(o => ({
             id: o.id,
             text: o.text,
             isCorrect: o.isCorrect,
-          }))
+          })) : []
         }))
       };
       
@@ -286,42 +339,83 @@ const CreateQuiz = () => {
                     />
                   </div>
 
+                  <ImageUpload
+                    imageUrl={question.imageUrl}
+                    onImageChange={(url) => updateQuestionImage(question.id, url)}
+                  />
+
                   <div className="space-y-4">
-                    <Label>Options</Label>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {question.options.map((option, oIndex) => (
-                        <div key={option.id} className="flex space-x-2">
-                          <div className="flex-1 space-y-2">
-                            <div className="flex items-center">
-                              <Label 
-                                htmlFor={`o-${option.id}`} 
-                                className="mr-2"
+                    <Label>Question Type</Label>
+                    <RadioGroup 
+                      value={question.questionType} 
+                      onValueChange={(value) => updateQuestionType(question.id, value as QuestionType)}
+                      className="flex space-x-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={QuestionType.MULTIPLE_CHOICE} id={`mc-${question.id}`} />
+                        <Label htmlFor={`mc-${question.id}`} className="flex items-center cursor-pointer">
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Multiple Choice
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={QuestionType.DIRECT_ANSWER} id={`da-${question.id}`} />
+                        <Label htmlFor={`da-${question.id}`} className="flex items-center cursor-pointer">
+                          <Image className="h-4 w-4 mr-1" />
+                          Direct Answer
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  {question.questionType === QuestionType.DIRECT_ANSWER ? (
+                    <div className="space-y-2">
+                      <Label htmlFor={`da-${question.id}`}>Correct Answer</Label>
+                      <Input
+                        id={`da-${question.id}`}
+                        placeholder="Enter the correct answer"
+                        value={question.directAnswer}
+                        onChange={(e) => updateDirectAnswer(question.id, e.target.value)}
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <Label>Options</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {question.options.map((option, oIndex) => (
+                          <div key={option.id} className="flex space-x-2">
+                            <div className="flex-1 space-y-2">
+                              <div className="flex items-center">
+                                <Label 
+                                  htmlFor={`o-${option.id}`} 
+                                  className="mr-2"
+                                >
+                                  {String.fromCharCode(65 + oIndex)}.
+                                </Label>
+                                <Input
+                                  id={`o-${option.id}`}
+                                  placeholder={`Option ${oIndex + 1}`}
+                                  value={option.text}
+                                  onChange={(e) => updateOptionText(question.id, option.id, e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                type="button"
+                                variant={option.isCorrect ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => setCorrectOption(question.id, option.id)}
+                                className="w-[80px]"
                               >
-                                {String.fromCharCode(65 + oIndex)}.
-                              </Label>
-                              <Input
-                                id={`o-${option.id}`}
-                                placeholder={`Option ${oIndex + 1}`}
-                                value={option.text}
-                                onChange={(e) => updateOptionText(question.id, option.id, e.target.value)}
-                              />
+                                {option.isCorrect ? "Correct" : "Set Correct"}
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              type="button"
-                              variant={option.isCorrect ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => setCorrectOption(question.id, option.id)}
-                              className="w-[80px]"
-                            >
-                              {option.isCorrect ? "Correct" : "Set Correct"}
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
