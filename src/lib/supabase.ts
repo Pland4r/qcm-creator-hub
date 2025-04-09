@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 
 // Default values for development - replace these with your actual Supabase project values
@@ -25,6 +26,9 @@ export type QuizOption = {
 export type QuizQuestion = {
   id: string;
   text: string;
+  imageUrl?: string;
+  questionType: 'MULTIPLE_CHOICE' | 'DIRECT_ANSWER';
+  directAnswer?: string;
   options: QuizOption[];
 };
 
