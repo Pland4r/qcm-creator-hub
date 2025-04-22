@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -6,12 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash, Save, Loader2 } from 'lucide-react';
+import { Plus, Trash, Save, Loader2, ImageIcon, MessageSquare } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import Layout from '@/components/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { quizService } from '@/services/apiService';
 import { Quiz } from '@/lib/supabase';
+import ImageUpload from '@/components/ImageUpload';
 
 enum QuestionType {
   MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
@@ -354,7 +357,7 @@ const CreateQuiz = () => {
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value={QuestionType.DIRECT_ANSWER} id={`da-${question.id}`} />
                         <Label htmlFor={`da-${question.id}`} className="flex items-center cursor-pointer">
-                          <Image className="h-4 w-4 mr-1" />
+                          <ImageIcon className="h-4 w-4 mr-1" />
                           Direct Answer
                         </Label>
                       </div>
