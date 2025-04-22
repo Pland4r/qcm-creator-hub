@@ -1,20 +1,17 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash, Save, Loader2, Image, MessageSquare } from 'lucide-react';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import Navbar from '@/components/Navbar';
+import { Plus, Trash, Save, Loader2 } from 'lucide-react';
+import Layout from '@/components/Layout';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { quizService } from '@/services/apiService';
 import { Quiz } from '@/lib/supabase';
-import ImageUpload from '@/components/ImageUpload';
 
 enum QuestionType {
   MULTIPLE_CHOICE = "MULTIPLE_CHOICE",
@@ -181,7 +178,6 @@ const CreateQuiz = () => {
       return;
     }
 
-    // Check for direct answer questions without answers
     const hasEmptyDirectAnswers = questions.some(q => 
       q.questionType === QuestionType.DIRECT_ANSWER && !q.directAnswer.trim()
     );
@@ -194,7 +190,6 @@ const CreateQuiz = () => {
       return;
     }
 
-    // Check multiple choice questions
     const multipleChoiceQuestions = questions.filter(q => q.questionType === QuestionType.MULTIPLE_CHOICE);
     
     const hasEmptyOptions = multipleChoiceQuestions.some(q => 
@@ -252,70 +247,68 @@ const CreateQuiz = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Create New Quiz</h1>
-          <p className="text-muted-foreground">Design your custom QCM for Spring Boot or Angular</p>
+    <Layout className="max-w-5xl mx-auto">
+      <div className="space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-bold tracking-tight">Create New Quiz</h1>
+          <p className="text-muted-foreground">Design interactive quizzes for Spring Boot and Angular</p>
         </div>
 
-        <div className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quiz Details</CardTitle>
-              <CardDescription>Set the basic information for your quiz</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Quiz Title</Label>
-                <Input 
-                  id="title" 
-                  placeholder="e.g. Spring Boot Fundamentals" 
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea 
-                  id="description" 
-                  placeholder="Describe what your quiz covers..." 
-                  className="min-h-[100px]"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="technology">Technology</Label>
-                <Select value={technology} onValueChange={setTechnology}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select technology" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="spring">Spring Boot</SelectItem>
-                    <SelectItem value="angular">Angular</SelectItem>
-                    <SelectItem value="both">Both</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Questions</h2>
-              <Button onClick={addQuestion}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Question
-              </Button>
+        <Card className="border-2">
+          <CardHeader>
+            <CardTitle>Quiz Details</CardTitle>
+            <CardDescription>Basic information about your quiz</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Quiz Title</Label>
+              <Input 
+                id="title" 
+                placeholder="e.g. Spring Boot Fundamentals" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea 
+                id="description" 
+                placeholder="Describe what your quiz covers..." 
+                className="min-h-[100px]"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="technology">Technology</Label>
+              <Select value={technology} onValueChange={setTechnology}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select technology" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="spring">Spring Boot</SelectItem>
+                  <SelectItem value="angular">Angular</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </CardContent>
+        </Card>
 
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight">Questions</h2>
+            <Button onClick={addQuestion} variant="outline" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add Question
+            </Button>
+          </div>
+
+          <div className="space-y-4">
             {questions.map((question, qIndex) => (
-              <Card key={question.id} className="relative">
+              <Card key={question.id} className="border-2">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
                     <CardTitle>Question {qIndex + 1}</CardTitle>
@@ -419,29 +412,29 @@ const CreateQuiz = () => {
                 </CardContent>
               </Card>
             ))}
+          </div>
 
-            <div className="flex justify-end space-x-4 mt-8">
-              <Button variant="outline" onClick={() => navigate('/')}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} disabled={createQuizMutation.isPending}>
-                {createQuizMutation.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Quiz
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="flex justify-end gap-4 pt-6">
+            <Button variant="outline" onClick={() => navigate('/')}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={createQuizMutation.isPending}>
+              {createQuizMutation.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Quiz
+                </>
+              )}
+            </Button>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 };
 

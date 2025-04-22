@@ -1,19 +1,17 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { quizService } from '@/services/apiService';
-import Navbar from '@/components/Navbar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import Layout from '@/components/Layout';
 
 const QuizView = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Log the backend connection info
   React.useEffect(() => {
     console.log("Connecting to Spring Boot backend...");
   }, []);
@@ -26,107 +24,94 @@ const QuizView = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 container py-8 flex items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-muted-foreground">Loading quiz...</p>
-          </div>
-        </main>
-      </div>
+      <Layout className="flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading quiz...</p>
+        </div>
+      </Layout>
     );
   }
 
   if (error || !quiz) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 container py-8">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <div className="text-center py-12">
-            <h2 className="text-xl font-bold text-destructive">Error loading quiz</h2>
-            <p className="text-muted-foreground mt-2">
-              {error instanceof Error ? error.message : "Quiz not found or unavailable"}
-            </p>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      
-      <main className="flex-1 container py-8">
+      <Layout>
         <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
-        
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-2xl mb-2">{quiz.title}</CardTitle>
-                <CardDescription>{quiz.description}</CardDescription>
-              </div>
-              <Badge variant={quiz.technology === 'spring' ? 'secondary' : 'default'}>
-                {quiz.technology === 'spring' ? 'Spring Boot' : quiz.technology === 'angular' ? 'Angular' : 'Both'}
-              </Badge>
+        <div className="text-center py-12">
+          <h2 className="text-xl font-bold text-destructive">Error loading quiz</h2>
+          <p className="text-muted-foreground mt-2">
+            {error instanceof Error ? error.message : "Quiz not found or unavailable"}
+          </p>
+        </div>
+      </Layout>
+    );
+  }
+
+  return (
+    <Layout>
+      <Button variant="ghost" onClick={() => navigate(-1)} className="mb-4">
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+      
+      <Card className="border-2">
+        <CardHeader className="space-y-4">
+          <div className="flex items-start justify-between">
+            <div className="space-y-2">
+              <CardTitle className="text-3xl">{quiz.title}</CardTitle>
+              <p className="text-muted-foreground">{quiz.description}</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              <h3 className="text-lg font-medium">Questions</h3>
+            <Badge variant={quiz.technology === 'spring' ? 'secondary' : 'default'} className="text-sm">
+              {quiz.technology === 'spring' ? 'Spring Boot' : quiz.technology === 'angular' ? 'Angular' : 'Both'}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold">Questions</h3>
+            <div className="space-y-4">
               {quiz.questions.map((question, index) => (
-                <Card key={question.id} className="border border-muted">
+                <Card key={question.id} className="border">
                   <CardHeader>
-                    <CardTitle className="text-base">
+                    <CardTitle className="text-lg font-medium">
                       {index + 1}. {question.text}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {question.imageUrl && (
-                      <div className="my-4">
-                        <img 
-                          src={question.imageUrl} 
-                          alt={`Question ${index + 1}`} 
-                          className="max-h-64 rounded-md mx-auto"
-                        />
-                      </div>
+                      <img 
+                        src={question.imageUrl} 
+                        alt={`Question ${index + 1}`} 
+                        className="max-h-64 rounded-lg mx-auto object-cover"
+                      />
                     )}
-
+                    
                     {question.questionType === "DIRECT_ANSWER" ? (
-                      <div className="p-4 bg-green-100 border border-green-300 rounded-md dark:bg-green-900/20 dark:border-green-800">
-                        <div className="flex items-center">
-                          <div className="flex-1">
-                            <span className="font-medium">Correct Answer: </span>
-                            {question.directAnswer}
-                          </div>
-                        </div>
+                      <div className="p-4 bg-green-100 rounded-lg border border-green-200">
+                        <p className="font-medium text-green-800">
+                          Correct Answer: {question.directAnswer}
+                        </p>
                       </div>
                     ) : (
-                      <div className="grid gap-2">
+                      <div className="grid gap-3">
                         {question.options.map((option) => (
                           <div
                             key={option.id}
-                            className={`p-3 rounded-md ${
+                            className={`p-4 rounded-lg ${
                               option.isCorrect 
-                                ? 'bg-green-100 border border-green-300 dark:bg-green-900/20 dark:border-green-800' 
+                                ? 'bg-green-100 border border-green-200' 
                                 : 'bg-muted'
                             }`}
                           >
-                            <div className="flex items-center">
-                              <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <span className={option.isCorrect ? 'font-medium' : ''}>
                                 {option.text}
-                              </div>
+                              </span>
                               {option.isCorrect && (
-                                <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400 border-green-200 dark:border-green-800">
+                                <Badge variant="outline" className="bg-green-50 text-green-700">
                                   Correct Answer
                                 </Badge>
                               )}
@@ -139,10 +124,10 @@ const QuizView = () => {
                 </Card>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+          </div>
+        </CardContent>
+      </Card>
+    </Layout>
   );
 };
 
