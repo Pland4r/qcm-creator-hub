@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,10 +15,9 @@ const Auth = () => {
   const { signIn, signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to quizzes
   React.useEffect(() => {
     if (user) {
-      navigate('/quizzes');
+      navigate('/');
     }
   }, [user, navigate]);
 
