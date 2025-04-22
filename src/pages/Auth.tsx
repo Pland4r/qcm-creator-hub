@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { Book, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -14,27 +16,54 @@ const Auth = () => {
   const [username, setUsername] = useState('');
   const { signIn, signUp, user, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  React.useEffect(() => {
+  // Enhanced useEffect to ensure redirect happens properly
+  useEffect(() => {
     if (user) {
-      navigate('/');
+      console.log("User authenticated, redirecting to home page", user);
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn(email, password);
+    try {
+      console.log("Attempting sign in with:", email);
+      await signIn(email, password);
+      // The redirect will happen via useEffect when user state updates
+    } catch (error) {
+      console.error("Sign in error:", error);
+    }
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signUp(username, email, password);
+    try {
+      await signUp(username, email, password);
+      toast({
+        title: "Account created successfully",
+        description: "Please sign in with your new account",
+      });
+    } catch (error) {
+      console.error("Sign up error:", error);
+    }
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
+
+  // If user is already logged in, redirect (additional safeguard)
+  if (user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+        <p className="ml-2">Redirecting to home page...</p>
       </div>
     );
   }

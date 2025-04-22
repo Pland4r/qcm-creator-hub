@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { authService } from '@/services/apiService';
@@ -29,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkAuth = async () => {
       try {
         const currentUser = await authService.getCurrentUser();
+        console.log("Auth check result:", currentUser);
         setUser(currentUser);
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -44,12 +44,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setIsLoading(true);
       const data = await authService.login(username, password);
+      console.log("Login successful, setting user:", data.user);
       setUser(data.user);
       
       toast({
         title: "Sign in successful",
         description: "Welcome back!",
       });
+      
+      return data.user;
     } catch (error) {
       toast({
         title: "Sign in failed",
@@ -57,6 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         variant: "destructive",
       });
       console.error('Error signing in:', error);
+      throw error;
     } finally {
       setIsLoading(false);
     }
