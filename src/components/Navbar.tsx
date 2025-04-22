@@ -38,6 +38,12 @@ const Navbar = () => {
               Home
             </Button>
           </Link>
+          <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary">
+            <Button variant="ghost" className="flex items-center">
+              <Book className="h-4 w-4 mr-2" />
+              About
+            </Button>
+          </Link>
           {user && (
             <Link to="/quizzes" className="text-sm font-medium transition-colors hover:text-primary">
               <Button variant="ghost">My Quizzes</Button>
