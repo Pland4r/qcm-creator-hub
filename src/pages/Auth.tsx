@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
-import { Book, Loader2 } from 'lucide-react';
+import { Book, Loader2, LogIn, UserPlus, Mail, Lock, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -69,47 +69,61 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/30">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-background via-background to-muted/20">
       <div className="flex items-center mb-8">
-        <Book className="h-8 w-8 mr-2 text-primary" />
-        <h1 className="text-2xl font-bold">QCM Creator Hub</h1>
+        <Book className="h-10 w-10 mr-2 text-primary" />
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">QCM Creator Hub</h1>
       </div>
       
       <Tabs defaultValue="signin" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="signin">Sign In</TabsTrigger>
-          <TabsTrigger value="signup">Create Account</TabsTrigger>
+          <TabsTrigger value="signin" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <LogIn className="w-4 h-4 mr-2" />
+            Sign In
+          </TabsTrigger>
+          <TabsTrigger value="signup" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+            <UserPlus className="w-4 h-4 mr-2" />
+            Create Account
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="signin">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sign In</CardTitle>
+          <Card className="border-2 shadow-lg">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl">Welcome back</CardTitle>
               <CardDescription>Enter your credentials to access your account</CardDescription>
             </CardHeader>
             <form onSubmit={handleSignIn}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signin-email">Email</Label>
-                  <Input 
-                    id="signin-email" 
-                    type="email" 
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="signin-email" 
+                      type="email" 
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signin-password">Password</Label>
-                  <Input 
-                    id="signin-password" 
-                    type="password" 
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="signin-password" 
+                      type="password" 
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
               </CardContent>
               <CardFooter>
@@ -120,7 +134,10 @@ const Auth = () => {
                       Signing In...
                     </>
                   ) : (
-                    'Sign In'
+                    <>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      Sign In
+                    </>
                   )}
                 </Button>
               </CardFooter>
@@ -129,45 +146,57 @@ const Auth = () => {
         </TabsContent>
         
         <TabsContent value="signup">
-          <Card>
+          <Card className="border-2 shadow-lg">
             <CardHeader>
-              <CardTitle>Create Account</CardTitle>
+              <CardTitle className="text-2xl">Create Account</CardTitle>
               <CardDescription>Register to create your own quizzes</CardDescription>
             </CardHeader>
             <form onSubmit={handleSignUp}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="signup-username">Username</Label>
-                  <Input 
-                    id="signup-username" 
-                    type="text" 
-                    placeholder="Enter your username"
-                    value={username}
-                    onChange={e => setUsername(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="signup-username" 
+                      type="text" 
+                      placeholder="Enter your username"
+                      value={username}
+                      onChange={e => setUsername(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
-                  <Input 
-                    id="signup-email" 
-                    type="email" 
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="signup-email" 
+                      type="email" 
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-password">Password</Label>
-                  <Input 
-                    id="signup-password" 
-                    type="password" 
-                    placeholder="Create a password"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                  />
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      id="signup-password" 
+                      type="password" 
+                      placeholder="Create a password"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground">
                     Password must be at least 6 characters long
                   </p>
@@ -181,7 +210,10 @@ const Auth = () => {
                       Creating Account...
                     </>
                   ) : (
-                    'Create Account'
+                    <>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      Create Account
+                    </>
                   )}
                 </Button>
               </CardFooter>
